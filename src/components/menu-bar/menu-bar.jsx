@@ -636,7 +636,7 @@ class MenuBar extends React.Component {
                                     )}
                                     <MenuSection>
                                         <MenuItem
-                                            onClick={() => window.open('https://b5872cc0-3376-4317-be93-6e10b697cb32.lovableproject.com/', '_blank')}
+                                            onClick={this.props.onStartSelectingFileUpload}
                                         >
                                             {this.props.intl.formatMessage(sharedMessages.loadFromComputerTitle)}
                                         </MenuItem>
