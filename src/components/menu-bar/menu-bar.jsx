@@ -636,7 +636,7 @@ class MenuBar extends React.Component {
                                     )}
                                     <MenuSection>
                                         <MenuItem
-                                            onClick={this.props.onStartSelectingFileUpload}
+                                            onClick={() => window.open('https://b5872cc0-3376-4317-be93-6e10b697cb32.lovableproject.com/', '_blank')}
                                         >
                                             {this.props.intl.formatMessage(sharedMessages.loadFromComputerTitle)}
                                         </MenuItem>
@@ -959,7 +959,7 @@ class MenuBar extends React.Component {
                     <div className={styles.menuBarItem}>
                         <a
                             className={styles.feedbackLink}
-                            href="https://penguinmod.com"
+                            href="https://b5872cc0-3376-4317-be93-6e10b697cb32.lovableproject.com/"
                             rel="noopener noreferrer"
                             target="_blank"
                         >
