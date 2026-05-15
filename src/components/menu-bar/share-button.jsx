@@ -154,8 +154,8 @@ class ShareButton extends React.Component {
             
             if (response.ok) {
                 const result = await response.json();
-                alert(`Projeto enviado para https://github.com/Pe-bot603/creative-canvas`);
-                window.open(`https://github.com/Pe-bot603/creative-canvas`, '_blank');
+                alert(`Projeto enviado para https://creative-canvas.pedrodavid0301.workers.dev/`);
+                window.open(`https://creative-canvas.pedrodavid0301.workers.dev/`, '_blank');
             } else {
                 const error = await response.text();
                 console.error('Upload failed:', error);
