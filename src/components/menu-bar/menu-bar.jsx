@@ -636,7 +636,14 @@ class MenuBar extends React.Component {
                                     )}
                                     <MenuSection>
                                         <MenuItem
-                                            onClick={this.props.onStartSelectingFileUpload}
+                                            onClick={() => {
+                                                console.log('Load from computer clicked!');
+                                                if (this.props.onStartSelectingFileUpload) {
+                                                    this.props.onStartSelectingFileUpload();
+                                                } else {
+                                                    console.error('onStartSelectingFileUpload is undefined!');
+                                                }
+                                            }}
                                         >
                                             {this.props.intl.formatMessage(sharedMessages.loadFromComputerTitle)}
                                         </MenuItem>
@@ -959,7 +966,7 @@ class MenuBar extends React.Component {
                     <div className={styles.menuBarItem}>
                         <a
                             className={styles.feedbackLink}
-                            href="https://b5872cc0-3376-4317-be93-6e10b697cb32.lovableproject.com/"
+                            href="https://penguinmod.com/"
                             rel="noopener noreferrer"
                             target="_blank"
                         >
