@@ -120,36 +120,54 @@ class ShareButton extends React.Component {
         this.setState({
             loading: true
         });
-        isUploadAvailable().then(available => {
-            this.setState({
-                loading: false
+        
+        // Get project as blob and upload to GitHub
+        try {
+            const blob = await window.vm.saveProjectSb3();
+            const projectTitle = this.props.projectTitle || 'project';
+            const fileName = `${projectTitle}.sb3`;
+            
+            // Convert blob to base64
+            const reader = new FileReader();
+            const base64Promise = new Promise((resolve) => {
+                reader.onload = () => {
+                    // Remove data:application/zip;base64, prefix
+                    const base64 = reader.result.split(',')[1];
+                    resolve(base64);
+                };
             });
-            if (!available) {
-                // error?
-                console.warn('Project Server did not respond. Uploading is not available.');
-                alert('Uploading is currently unavailable. Please wait for the server to be restored.');
-                return;
+            reader.readAsDataURL(blob);
+            const base64Content = await base64Promise;
+            
+            // Upload to GitHub using API
+            const response = await fetch('http://localhost:3001/api/upload-to-github', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    fileName: fileName,
+                    content: base64Content,
+                    path: `projects/${fileName}`
+                })
+            });
+            
+            if (response.ok) {
+                const result = await response.json();
+                alert(`Projeto enviado para https://github.com/Pe-bot603/creative-canvas`);
+                window.open(`https://github.com/Pe-bot603/creative-canvas`, '_blank');
+            } else {
+                const error = await response.text();
+                console.error('Upload failed:', error);
+                alert('Erro ao enviar projeto para o GitHub. Verifique o console para detalhes.');
             }
-
-            const isEdit = this.props.usernameLoggedIn
-                && this.props.extraProjectInfo?.author === this.props.username;
-
-            let editPiece = '';
-            let remixPiece = '';
-            const id = location.hash.replace('#', '');
-            if (this.props.extraProjectInfo?.isRemix) {
-                remixPiece = `&remix=${id}`;
-            }
-
-            let targetPage = 'upload';
-            if (isEdit) {
-                targetPage = 'edit';
-                editPiece = `&id=${id}`;
-            }
-
-            const projectTitle = encodeURIComponent(this.props.projectTitle);
-            const url = location.origin;
-            window.open(`https://penguinmod.com/${targetPage}?name=${projectTitle}${editPiece}${remixPiece}&external=${url}`, '_blank');
+        } catch (error) {
+            console.error('Upload error:', error);
+            alert('Erro ao enviar projeto: ' + error.message);
+        }
+        
+        this.setState({
+            loading: false
         });
     }
     render() {
