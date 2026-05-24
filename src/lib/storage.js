@@ -119,5 +119,7 @@ class Storage extends ScratchStorage {
 }
 
 const storage = new Storage();
+storage.setProjectHost(process.env.PROJECT_HOST);
+storage.setAssetHost(process.env.ASSET_HOST);
 
 export default storage;
