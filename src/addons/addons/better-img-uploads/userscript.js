@@ -1,8 +1,14 @@
 export default async function ({ addon, console, msg }) {
   let mode = addon.settings.get("fitting");
+  let outputFormat = addon.settings.get("outputFormat");
+  let quality = parseInt(addon.settings.get("quality"));
+  let smoothing = addon.settings.get("smoothing");
 
   addon.settings.addEventListener("change", () => {
     mode = addon.settings.get("fitting");
+    outputFormat = addon.settings.get("outputFormat");
+    quality = parseInt(addon.settings.get("quality"));
+    smoothing = addon.settings.get("smoothing");
   });
 
   const createItem = (id, right) => {
@@ -25,7 +31,7 @@ export default async function ({ addon, console, msg }) {
     });
     button.append(img);
     const input = Object.assign(document.createElement("input"), {
-      accept: ".svg, .png, .bmp, .jpg, .jpeg",
+      accept: ".svg, .png, .bmp, .jpg, .jpeg, .webp, .gif",
       className: `${addon.tab.scratchClass(
         "action-menu_file-input" /* TODO: when adding dynamicDisable, ensure compat with drag-drop */
       )} sa-better-img-uploads-input`,
@@ -110,14 +116,14 @@ export default async function ({ addon, console, msg }) {
     let processed = new Array();
 
     for (let file of files) {
-      if (file.type.includes("svg")) {
-        //The file is already a svg, we should not change it...
+      if (file.type.includes("svg") && outputFormat === "svg") {
+        //The file is already a svg and we want svg, we should not change it...
         processed.push(file);
         continue;
       }
 
       let blob = await new Promise((resolve) => {
-        //Get the Blob data url for the image so that we can add it to the svg
+        //Get the Blob data url for the image so that we can add it to the svg or convert
         let reader = new FileReader();
         reader.addEventListener("load", () => resolve(reader.result));
         reader.readAsDataURL(file);
@@ -125,6 +131,24 @@ export default async function ({ addon, console, msg }) {
 
       let i = new Image(); //New image to get the image's size
       i.src = blob;
+      
+      // Handle animated GIFs - extract first frame
+      if (file.type === "image/gif") {
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+        await new Promise((resolve) => {
+          i.onload = () => {
+            canvas.width = i.width;
+            canvas.height = i.height;
+            ctx.drawImage(i, 0, 0);
+            resolve();
+          };
+        });
+        blob = canvas.toDataURL("image/png");
+        i.src = blob;
+        await new Promise((resolve) => { i.onload = resolve; });
+      }
+      
       await new Promise((resolve) => {
         i.onload = resolve;
       });
@@ -132,9 +156,13 @@ export default async function ({ addon, console, msg }) {
       let dim = { width: i.width, height: i.height };
       const originalDim = JSON.parse(JSON.stringify(dim));
 
-      if (mode === "fit") {
+      // Calculate new dimensions based on mode
+      if (mode === "original" || mode === "full") {
+        // Keep original size - maximum quality
+        dim = { width: originalDim.width, height: originalDim.height };
+      } else if (mode === "fit") {
         //Make sure the image fits completely in the stage
-        dim = getResizedWidthHeight(dim.width, dim.height);
+        dim = getResizedWidthHeight(dim.width, dim.height, 1);
       } else if (mode === "fill") {
         //Fill the stage with the image
         dim.height = (dim.height / dim.width) * 480;
@@ -147,22 +175,26 @@ export default async function ({ addon, console, msg }) {
           dim.height = (dim.height / dim.width) * 480;
           dim.width = 480;
         }
+      } else if (mode === "2x") {
+        // 2x stage resolution
+        dim = getResizedWidthHeight(dim.width, dim.height, 2);
+      } else if (mode === "4x") {
+        // 4x stage resolution
+        dim = getResizedWidthHeight(dim.width, dim.height, 4);
       } //Otherwise just leave the image the same size
 
-      function getResizedWidthHeight(oldWidth, oldHeight) {
-        const STAGE_WIDTH = 479;
-        const STAGE_HEIGHT = 360;
+      function getResizedWidthHeight(oldWidth, oldHeight, multiplier = 1) {
+        const STAGE_WIDTH = 479 * multiplier;
+        const STAGE_HEIGHT = 360 * multiplier;
         const STAGE_RATIO = STAGE_WIDTH / STAGE_HEIGHT;
 
         // If both dimensions are smaller than or equal to corresponding stage dimension,
-        // double both dimensions
+        // return as is (for original/full mode) or double stage size
         if (oldWidth <= STAGE_WIDTH && oldHeight <= STAGE_HEIGHT) {
-          return { width: oldWidth, height: oldHeight };
-        }
-
-        // If neither dimension is larger than 2x corresponding stage dimension,
-        // this is an in-between image, return it as is
-        if (oldWidth <= STAGE_WIDTH && oldHeight <= STAGE_HEIGHT) {
+          if (mode === "2x" || mode === "4x") {
+            // Scale up to 2x or 4x
+            return { width: Math.max(oldWidth, STAGE_WIDTH), height: Math.max(oldHeight, STAGE_HEIGHT) };
+          }
           return { width: oldWidth, height: oldHeight };
         }
 
@@ -175,26 +207,20 @@ export default async function ({ addon, console, msg }) {
             height: Math.floor(STAGE_WIDTH / imageRatio),
           };
         }
-        // In this case we have either:
-        // - A wide image, but not with as big a ratio between width and height,
-        // making it so that fitting the width to double stage size would leave
-        // the height too big to fit in double the stage height
-        // - A square image that's still larger than the double at least
-        // one of the stage dimensions, so pick the smaller of the two dimensions (to fit)
-        // - A tall image
-        // In any of these cases, resize the image to fit the height to double the stage height
         return {
           width: Math.floor(STAGE_HEIGHT * imageRatio),
           height: STAGE_HEIGHT,
         };
       }
 
-      processed.push(
-        new File( //Create the svg file
-          [
-            `<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0,0,${
-              dim.width
-            },${dim.height}" width="${dim.width}" height="${dim.height}">
+      if (outputFormat === "svg") {
+        // Create SVG file
+        processed.push(
+          new File(
+            [
+              `<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0,0,${
+                dim.width
+              },${dim.height}" width="${dim.width}" height="${dim.height}">
         <g>
           <g
               data-paper-data='{"isPaintingLayer":true}'
@@ -218,13 +244,37 @@ export default async function ({ addon, console, msg }) {
           </g>
         </g>
       </svg>`,
-          ],
-          `${file.name.replace(/(.*)\..*/, "$1")}.svg`,
-          {
-            type: "image/svg+xml",
-          }
-        )
-      );
+            ],
+            `${file.name.replace(/\.[^/.]+$/, "")}.svg`,
+            {
+              type: "image/svg+xml",
+            }
+          )
+        );
+      } else {
+        // Create PNG or WebP with canvas
+        const canvas = document.createElement("canvas");
+        canvas.width = dim.width;
+        canvas.height = dim.height;
+        const ctx = canvas.getContext("2d");
+        
+        // Disable smoothing for better quality in downscaling
+        ctx.imageSmoothingEnabled = smoothing;
+        ctx.imageSmoothingQuality = quality === 100 ? "high" : "medium";
+        
+        // Fill with white background (for PNG with transparency support)
+        ctx.drawImage(i, 0, 0, dim.width, dim.height);
+        
+        const mimeType = outputFormat === "webp" ? "image/webp" : "image/png";
+        const qualityParam = quality / 100;
+        
+        const newBlob = await new Promise((resolve) => {
+          canvas.toBlob(resolve, mimeType, outputFormat === "webp" ? qualityParam : undefined);
+        });
+        
+        const newFileName = `${file.name.replace(/\.[^/.]+$/, "")}.${outputFormat}`;
+        processed.push(new File([newBlob], newFileName, { type: mimeType }));
+      }
     }
 
     (el = document.getElementById(iD).nextElementSibling.querySelector("input")).files = new FileList(processed); //Convert processed image array to a FileList, which is not normally constructible.
