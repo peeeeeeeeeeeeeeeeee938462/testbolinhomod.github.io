@@ -1,16 +1,8 @@
 const express = require('express');
 const https = require('https');
-const path = require('path');
-const fs = require('fs');
 
 const app = express();
 app.use(express.json({ limit: '50mb' }));
-app.use(express.static(path.join(__dirname, 'static')));
-
-// Serve index.html at root
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'static', 'index.html'));
-});
 
 // GitHub upload API route
 app.post('/api/upload-to-github', async (req, res) => {
