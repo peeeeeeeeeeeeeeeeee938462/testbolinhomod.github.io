@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BolinhoMod - Crie, Compartilhe, Inspire</title>
+    <link rel="icon" type="image/png" href="/static/favicon.png">
+    <link rel="stylesheet" href="/static/css/homepage.css">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="logo">
+                <img src="/static/favicon.png" alt="BolinhoMod" class="logo-img">
+                <span>BolinhoMod</span>
+            </a>
+            <div class="nav-links">
+                <a href="#projects" class="nav-link">Explorar</a>
+                <a href="#create" class="nav-link">Criar</a>
+                <a href="#about" class="nav-link">Sobre</a>
+            </div>
+            <div class="nav-auth" id="navAuth">
+                <!-- Dynamic content: login/logout buttons -->
+            </div>
+            <button class="mobile-menu-btn" id="mobileMenuBtn">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Mobile Menu -->
+    <div class="mobile-menu" id="mobileMenu">
+        <a href="#projects" class="mobile-link">Explorar</a>
+        <a href="#create" class="mobile-link">Criar</a>
+        <a href="#about" class="mobile-link">Sobre</a>
+        <div id="mobileAuth"></div>
+    </div>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1 class="hero-title">Crie. Compartilhe. Inspire.</h1>
+            <p class="hero-subtitle">A plataforma de criação de jogos e animações interativas. Sem limites para sua imaginação!</p>
+            <div class="hero-buttons">
+                <a href="#create" class="btn btn-primary">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 5v14M5 12h14"/>
+                    </svg>
+                    Começar a Criar
+                </a>
+                <a href="#projects" class="btn btn-secondary">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <polygon points="10 8 16 12 10 16 10 8"/>
+                    </svg>
+                    Ver Projetos
+                </a>
+            </div>
+            <div class="hero-stats">
+                <div class="stat">
+                    <span class="stat-number" id="totalProjects">0</span>
+                    <span class="stat-label">Projetos</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-number" id="totalUsers">0</span>
+                    <span class="stat-label">Criadores</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-number">∞</span>
+                    <span class="stat-label">Possibilidades</span>
+                </div>
+            </div>
+        </div>
+        <div class="hero-visual">
+            <div class="hero-card">
+                <div class="card-preview">
+                    <div class="card-icon">🎮</div>
+                </div>
+                <div class="card-info">
+                    <span class="card-title">Jogo de Corrida</span>
+                    <span class="card-author">por @criador</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Featured Projects -->
+    <section class="section" id="projects">
+        <div class="section-header">
+            <h2 class="section-title">Projetos em Destaque</h2>
+            <p class="section-subtitle">Descubra criações incríveis da comunidade</p>
+        </div>
+        <div class="projects-grid" id="featuredProjects">
+            <!-- Projects loaded dynamically -->
+            <div class="loading-spinner">
+                <div class="spinner"></div>
+                <span>Carregando projetos...</span>
+            </div>
+        </div>
+        <div class="section-footer">
+            <button class="btn btn-outline" id="loadMoreProjects">Ver Mais Projetos</button>
+        </div>
+    </section>
+
+    <!-- Categories -->
+    <section class="section categories-section">
+        <div class="section-header">
+            <h2 class="section-title">Categorias</h2>
+            <p class="section-subtitle">Explore projetos por categoria</p>
+        </div>
+        <div class="categories-grid">
+            <a href="#projects?category=jogos" class="category-card">
+                <div class="category-icon">🎮</div>
+                <span class="category-name">Jogos</span>
+                <span class="category-count">Jogos e diversion</span>
+            </a>
+            <a href="#projects?category=arte" class="category-card">
+                <div class="category-icon">🎨</div>
+                <span class="category-name">Arte</span>
+                <span class="category-count">Desenhos e animacoes</span>
+            </a>
+            <a href="#projects?category=musica" class="category-card">
+                <div class="category-icon">🎵</div>
+                <span class="category-name">Música</span>
+                <span class="category-count">Projetos sonoros</span>
+            </a>
+            <a href="#projects?category=historias" class="category-card">
+                <div class="category-icon">📚</div>
+                <span class="category-name">Histórias</span>
+                <span class="category-count">Narrativas interativas</span>
+            </a>
+            <a href="#projects?category=tutoriais" class="category-card">
+                <div class="category-icon">📖</div>
+                <span class="category-name">Tutoriais</span>
+                <span class="category-count">Aprenda e crie</span>
+            </a>
+            <a href="#projects?category=simulacoes" class="category-card">
+                <div class="category-icon">🔬</div>
+                <span class="category-name">Simulações</span>
+                <span class="category-count">Experimentos virtuais</span>
+            </a>
+        </div>
+    </section>
+
+    <!-- My Stuff Section (when logged in) -->
+    <section class="section" id="my-stuff-section" style="display: none;">
+        <div class="section-header">
+            <h2 class="section-title">Meu Espaço</h2>
+            <div class="my-stuff-tabs">
+                <button class="tab-btn active" data-tab="my-projects">Meus Projetos</button>
+                <button class="tab-btn" data-tab="favorites">Favoritos</button>
+                <button class="tab-btn" data-tab="shared">Compartilhados</button>
+            </div>
+        </div>
+        <div class="my-stuff-content">
+            <!-- My Projects Tab -->
+            <div class="tab-content active" id="my-projects">
+                <div class="my-projects-header">
+                    <button class="btn btn-primary" id="createProjectBtn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 5v14M5 12h14"/>
+                        </svg>
+                        Novo Projeto
+                    </button>
+                    <div class="search-box">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"/>
+                            <path d="M21 21l-4.35-4.35"/>
+                        </svg>
+                        <input type="text" placeholder="Buscar meus projetos..." id="searchMyProjects">
+                    </div>
+                </div>
+                <div class="projects-grid" id="myProjectsGrid">
+                    <!-- User's projects loaded dynamically -->
+                </div>
+            </div>
+            <!-- Favorites Tab -->
+            <div class="tab-content" id="favorites">
+                <div class="projects-grid" id="favoritesGrid">
+                    <!-- Favorite projects -->
+                </div>
+            </div>
+            <!-- Shared Tab -->
+            <div class="tab-content" id="shared">
+                <div class="projects-grid" id="sharedGrid">
+                    <!-- Shared projects -->
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Create Section -->
+    <section class="section create-section" id="create">
+        <div class="create-content">
+            <h2 class="section-title">Pronto para Criar?</h2>
+            <p class="section-subtitle">Abra o editor e deixe sua imaginação fluir!</p>
+            <div class="create-buttons">
+                <button class="create-card" id="newProjectBtn">
+                    <div class="create-icon">✨</div>
+                    <span class="create-label">Novo Projeto</span>
+                    <span class="create-desc">Comece do zero</span>
+                </button>
+                <button class="create-card" id="uploadProjectBtn">
+                    <div class="create-icon">📁</div>
+                    <span class="create-label">Upload</span>
+                    <span class="create-desc">Carregue um projeto .sb3</span>
+                </button>
+                <button class="create-card" id="templatesBtn">
+                    <div class="create-icon">📋</div>
+                    <span class="create-label">Templates</span>
+                    <span class="create-desc">Comece com um modelo</span>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section class="section" id="about">
+        <div class="about-content">
+            <h2 class="section-title">Sobre o BolinhoMod</h2>
+            <div class="about-grid">
+                <div class="about-card">
+                    <div class="about-icon">🎯</div>
+                    <h3>Missão</h3>
+                    <p>Proporcionar uma plataforma acessível para todos criarem, compartilharem e aprenderem através da criação de jogos e animações.</p>
+                </div>
+                <div class="about-card">
+                    <div class="about-icon">🌍</div>
+                    <h3>Comunidade</h3>
+                    <p>Uma comunidade global de criadores que inspiram e apoiam uns aos outros em sua jornada criativa.</p>
+                </div>
+                <div class="about-card">
+                    <div class="about-icon">🚀</div>
+                    <h3>Inovação</h3>
+                    <p> постоянное развитие и улучшение платформы для предоставления лучших инструментов для создания.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <img src="/static/favicon.png" alt="BolinhoMod" class="footer-logo">
+                <span>BolinhoMod</span>
+            </div>
+            <div class="footer-links">
+                <a href="/static/terms.html">Termos de Uso</a>
+                <a href="/static/privacy.html">Privacidade</a>
+                <a href="/static/contact.html">Contato</a>
+            </div>
+            <div class="footer-social">
+                <a href="#" class="social-link" title="GitHub">🐙</a>
+                <a href="#" class="social-link" title="Discord">💬</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2024 BolinhoMod. Feito com 💛 pela comunidade.</p>
+        </div>
+    </footer>
+
+    <!-- Auth Modal -->
+    <div class="modal" id="authModal">
+        <div class="modal-content auth-modal-content">
+            <button class="modal-close" id="closeAuthModal">&times;</button>
+            <div class="auth-tabs">
+                <button class="auth-tab active" data-tab="login">Entrar</button>
+                <button class="auth-tab" data-tab="register">Criar Conta</button>
+            </div>
+            <!-- Login Form -->
+            <form id="loginForm" class="auth-form">
+                <div class="form-group">
+                    <label for="loginEmail">Email</label>
+                    <input type="email" id="loginEmail" required placeholder="seu@email.com">
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Senha</label>
+                    <input type="password" id="loginPassword" required placeholder="••••••••">
+                </div>
+                <button type="submit" class="btn btn-primary btn-full">Entrar</button>
+                <div class="auth-divider">
+                    <span>ou continue com</span>
+                </div>
+                <button type="button" class="btn btn-social" id="googleLoginBtn">
+                    <svg width="20" height="20" viewBox="0 0 24 24">
+                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                    </svg>
+                    Continuar com Google
+                </button>
+            </form>
+            <!-- Register Form -->
+            <form id="registerForm" class="auth-form" style="display: none;">
+                <div class="form-group">
+                    <label for="registerUsername">Nome de Usuário</label>
+                    <input type="text" id="registerUsername" required placeholder="seu_usuario" minlength="3">
+                </div>
+                <div class="form-group">
+                    <label for="registerEmail">Email</label>
+                    <input type="email" id="registerEmail" required placeholder="seu@email.com">
+                </div>
+                <div class="form-group">
+                    <label for="registerPassword">Senha</label>
+                    <input type="password" id="registerPassword" required placeholder="••••••••" minlength="6">
+                </div>
+                <div class="form-group">
+                    <label for="registerConfirm">Confirmar Senha</label>
+                    <input type="password" id="registerConfirm" required placeholder="••••••••">
+                </div>
+                <button type="submit" class="btn btn-primary btn-full">Criar Conta</button>
+            </form>
+            <div class="auth-message" id="authMessage"></div>
+        </div>
+    </div>
+
+    <!-- Report Modal -->
+    <div class="modal" id="reportModal">
+        <div class="modal-content">
+            <button class="modal-close" id="closeReportModal">&times;</button>
+            <h2 class="modal-title">Reportar Projeto</h2>
+            <form id="reportForm">
+                <input type="hidden" id="reportProjectId">
+                <div class="form-group">
+                    <label for="reportReason">Motivo do Report</label>
+                    <select id="reportReason" required>
+                        <option value="">Selecione um motivo</option>
+                        <option value="spam">Spam ou conteúdo irrelevante</option>
+                        <option value="inappropriate">Conteúdo impróprio</option>
+                        <option value="harassment">Assédio ou bullying</option>
+                        <option value="copyright">Violação de direitos autorais</option>
+                        <option value="other">Outro</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="reportDescription">Descrição (opcional)</label>
+                    <textarea id="reportDescription" rows="4" placeholder="Descreva o problema..."></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary btn-full">Enviar Report</button>
+            </form>
+            <div class="report-success" id="reportSuccess" style="display: none;">
+                <span class="success-icon">✓</span>
+                <span>Report enviado com sucesso! Obrigado por ajudar a manter a comunidade segura.</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Project Card Modal (Preview) -->
+    <div class="modal" id="projectModal">
+        <div class="modal-content project-modal-content">
+            <button class="modal-close" id="closeProjectModal">&times;</button>
+            <div class="project-preview" id="projectPreviewContent">
+                <!-- Project details loaded dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Upload File Input (hidden) -->
+    <input type="file" id="fileUploadInput" accept=".sb3,.zip" style="display: none;">
+
+    <!-- Toast Notifications -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay" style="display: none;">
+        <div class="loading-content">
+            <div class="spinner large"></div>
+            <span>Carregando...</span>
+        </div>
+    </div>
+
+    <script src="/static/js/homepage.js"></script>
+</body>
+</html>
